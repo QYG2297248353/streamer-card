@@ -41,6 +41,7 @@ app.post('/saveImg', async (req, res) => {
     try {
         const body = req.body;
         let iconSrc = body.icon;
+        let qrcodeSrc = body.qrcodeImg;
         let params = new URLSearchParams({ isAPI: true });
         let blackArr = ['icon', 'switchConfig', 'content'];
 
@@ -100,6 +101,23 @@ app.post('/saveImg', async (req, res) => {
                 };
                 return loadImage();
             }, iconSrc);
+        }
+        if (qrcodeSrc && qrcodeSrc.startsWith('http')) {
+            await page.evaluate(async imgSrc => {
+                const loadImage = () => {
+                    return new Promise(resolve => {
+                        const imageElement = document.querySelector('[name="qrcodeImg"]');
+                        if (imageElement) {
+                            imageElement.src = imgSrc;
+                            imageElement.addEventListener('load', () => resolve(true));
+                            imageElement.addEventListener('error', () => resolve(true));
+                        } else {
+                            resolve(false);
+                        }
+                    });
+                };
+                return loadImage();
+            }, qrcodeSrc);
         }
 
         const boundingBox = await cardElement.boundingBox();
